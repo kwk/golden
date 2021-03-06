@@ -1,0 +1,11 @@
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "Address": {
+    "Street": "Avenue Lane",
+    "Number": 3,
+    "Postcode": "",
+    "Country": "North Pole"
+  },
+  "MovedIn": "0001-01-01T00:00:00Z"
+}

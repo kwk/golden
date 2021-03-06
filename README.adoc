@@ -1,0 +1,290 @@
+= golden
+:toc:
+:toc-placement: preamble
+:sectnums:
+:experimental:
+
+image:https://github.com/kwk/golden/actions/workflows/go.yml/badge.svg[Go,link="https://github.com/kwk/golden/actions/workflows/go.yml"]
+image:https://codecov.io/gh/kwk/golden/branch/main/graph/badge.svg?token=8CBUCOrLzI[codecov,link="https://github.com/kwk/golden/actions/workflows/go.yml"]
+image:https://goreportcard.com/badge/github.com/kwk/golden[Go Report Card,link="https://goreportcard.com/report/github.com/kwk/golden"]
+image:https://pkg.go.dev/badge/github.com/kwk/golden.svg[Go Reference,link="https://pkg.go.dev/github.com/kwk/golden"]
+
+**golden** can be used in Go tests for string- or JSON-based comparisons of arbitrary nested objects.
+
+Generally speaking, in testing there is a concept of a "golden file" which represents the desired *document* against which you match the result of an operation in a test.
+
+== The Why
+
+You might ask yourself why we decided to compare objects against a desired test outcome by first converting the object into text instead of using `reflect.DeepEqual()`. The answer is trivial: we are humans. We figured that all existing comparisons (incl. `reflect.DeepEqual()`) don't allow for a flexibly ignoring mismatches between the expected and the actual result at an arbitrary level of nesting.
+
+Unfortunately for us, there are many types of values that are hard to match or simply unnecessary to match when comparing objects. This is where **golden** can help.
+
+=== Time-based values
+A `created_at` or `updated_at` field in some HTTP response should probably just be tested for existence and that it is a valid time. The exact time itself probably isn't that necessary.
+
+=== UUID values
+When UUIDs are recurring in parts of one document (e.g. `"edit": "http://www.example.com/api/person/d7a282f6-1c10-459e-bb44-55a1a6d48bdd/edit"` and `"id": "d7a282f6-1c10-459e-bb44-55a1a6d48bdd"`), we probably want to check that the UUID is correctly repeated in the right places. But the actualy value is more or less irrelevant.
+
+== Usage (simple case)
+
+For example, when you have an object like this:
+
+[source,go]
+----
+johnDoe := Person{
+    FirstName: "John",
+    LastName:  "Doe",
+    Address: Address{
+        Street:  "Avenue Lane",
+        Number:  3,
+        Country: "North Pole",
+    },
+}
+----
+
+the golden file (in JSON format) could look like this:
+
+[source,yaml]
+----
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "Address": {
+    "Street": "Avenue Lane",
+    "Number": 3,
+    "Postcode": "",
+    "Country": "North Pole"
+  }
+}
+----
+
+Then, in a test you can check if the JSON representation of `johnDoe` is the same as the one in the file `johnDoe.golden.json` by calling:
+
+[source,go]
+----
+golden.CompareWithGolden(t, "johnDoe.golden.json", johnDoe, golden.CompareOptions{MarshalInputAsJSON: true})
+----
+
+If the comparison fails, `Fatal()` is called on the passed the `testing.T` object `t`.
+
+When we replace `"FirstName": "John"` with `"FirstName": "Jane"` in the golden file the test output looks like this:
+
+image:https://raw.githubusercontent.com/kwk/golden/main/demo/demo1.png[demo]
+
+== An old example
+
+In a https://github.com/fabric8-services/fabric8-wit[former project] we wanted to test results of calling an HTTP JSON API endpoint. Such a message could look like this:
+
+[source,yaml]
+----
+{
+    "data": {
+        "attributes": {
+            "createdAt": "2017-04-21T04:38:26.777609Z",
+            "last_used_workspace": "my-last-used-workspace",
+            "type": "git",
+            "url": "https://github.com/fabric8-services/fabric8-wit.git"
+        },
+        "id": "d7a282f6-1c10-459e-bb44-55a1a6d48bdd",
+        "links": {
+        "edit": "http:///api/codebases/d7a282f6-1c10-459e-bb44-55a1a6d48bdd/edit",
+        "related": "http:///api/codebases/d7a282f6-1c10-459e-bb44-55a1a6d48bdd",
+        "self": "http:///api/codebases/d7a282f6-1c10-459e-bb44-55a1a6d48bdd"
+        },
+        "relationships": {
+            "space": {
+                "data": {
+                "id": "a8bee527-12d2-4aff-9823-3511c1c8e6b9",
+                "type": "spaces"
+                },
+                "links": {
+                "related": "http:///api/spaces/a8bee527-12d2-4aff-9823-3511c1c8e6b9",
+                "self": "http:///api/spaces/a8bee527-12d2-4aff-9823-3511c1c8e6b9"
+                }
+            }
+        },
+        "type": "codebases"
+    }
+}
+----
+
+**DISCLAIMER:** The above code is probably wrong JSON-API but that doesn't matter here ;)
+
+As you can see, we have a time value (`"2017-04-21T04:38:26.777609Z"`) and some UUID values (`d7a282f6-1c10-459e-bb44-55a1a6d48bdd` and `a8bee527-12d2-4aff-9823-3511c1c8e6b9`) in the *document*.
+
+It would be very tough and error-prone to create an object in Go that matches the expected outcome from above with all the UUIDs and times. But it is much easier to create a golden file automatically upon request. I'll show you in another example.
+
+== Create or update golden file
+
+You can create or update (overwrite) a golden file by supplying the `-update` flag to the `go test` invocation.
+
+You can test this by doing the following:
+
+[source,bash]
+----
+git clone https://github.com/kwk/golden.git
+cd golden/demo
+rm *.golden.json
+ls
+# See that golden files are gone
+go test ./ -update
+ls
+# See that golden files have been created for you again
+----
+
+== Usage (ignore time-based values)
+
+Let's take our `Person` struct from before and augment it with a silly *moved-in* field:
+
+[source,go]
+----
+func TestAddMovedInField(t *testing.T) {
+	// Let's augment the Person struct by
+	type PersonMovedIn struct {
+		Person
+		MovedIn time.Time
+	}
+
+	johnDoe := PersonMovedIn{
+		Person: Person{
+			FirstName: "John",
+			LastName:  "Doe",
+			Address: Address{
+				Street:  "Avenue Lane",
+				Number:  3,
+				Country: "North Pole",
+			},
+		},
+		MovedIn: time.Now(),
+	}
+
+	golden.CompareWithGolden(t, "movedIn.golden.json", johnDoe, golden.CompareOptions{
+		MarshalInputAsJSON: true,
+		DateTimeAgnostic:   true,
+	})
+}
+----
+
+Notice that we've turned on the `DateTimeAgnostic` compare option. This will do two things.
+
+1. create a golden file (the expected outcome) that has the time reset to `0001-01-01T00:00:00Z`:
+
+[source,yaml]
+----
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "Address": {
+    "Street": "Avenue Lane",
+    "Number": 3,
+    "Postcode": "",
+    "Country": "North Pole"
+  },
+  "MovedIn": "0001-01-01T00:00:00Z"
+}
+----
+
+2. modify all time values in the JSON representation of the actual value to be `0001-01-01T00:00:00Z` as well.
+
+This has two benefits:
+
+1. The expected document (aka golden file) looks still okay or unchanged from an API perspective as the value type for the `MovedIn` field is still a time. 
+1. We have a fixed value to match against in one defined format. This is especially important since the format of `time.Now()` marshalled to JSON depends on the timezone. For me it returns `"2021-03-08T12:26:54.151242279+01:00"` for example.
+
+When `golden.CompareOptions.DateTimeAgnostic` is `true`, then **golden** finds all RFC3339 times and RFC7232 (section 2.2) times in the expected string and replaces them with "0001-01-01T00:00:00Z" (for RFC3339) or "Mon, 01 Jan 0001 00:00:00 GMT" (for RFC7232) respectively.
+
+
+== Usage (UUID agnostic)
+
+Suppose you have an `actual` result in which multiple UUIDs repeat but are different on every test run. **golden** will find the UUIDs for you, and replace them with numbered UUIDish strings of increasing increment.
+
+Take the following silly example and notice that the UUIDs for `x`, `y`, and `z` are distinct and different on each test invokation. Yet, they are repeated in the `actual` struct.  
+
+[source,go]
+----
+func TestSillyUUIDStruct(t *testing.T) {
+	// Let's augment the Person struct by
+	type UUIDGroup struct {
+		A, B, C, D, E, F uuid.UUID
+	}
+
+	x := uuid.NewV4()
+	y := uuid.NewV4()
+	z := uuid.NewV4()
+
+	actual := UUIDGroup{y, z, x, z, x, y}
+
+	golden.CompareWithGolden(t, "sillyUuid.golden.json", actual, golden.CompareOptions{
+		MarshalInputAsJSON: true,
+		UUIDAgnostic:       true,
+	})
+}
+----
+
+The golden file produced by `-update` for this flag looks like this:
+
+[source,yaml]
+----
+{
+  "A": "00000000-0000-0000-0000-000000000001",
+  "B": "00000000-0000-0000-0000-000000000002",
+  "C": "00000000-0000-0000-0000-000000000003",
+  "D": "00000000-0000-0000-0000-000000000002",
+  "E": "00000000-0000-0000-0000-000000000003",
+  "F": "00000000-0000-0000-0000-000000000001"
+}
+----
+
+== FAQ
+
+=== What are the requirements?
+The approach of this library is agnostic to the underlying object as long as it can be converted to a string or marshalled as JSON. When dealing with JSON you have the added benefit of an output document that is nicely formatted before it's saved to disk. This is good for manual inspection for example. Of course textual comparison isn't the fastest to compute but having requests and responses as text sitting next to your code can add quite a significant *documentation value*. Also, the golden files can *uncover weaknesses* of your API design at plain sight.
+
+=== Any shortcomings?
+Unless you objects implement the `Stringer` interface, all of the fields in your objects that you want to compare need to be publically accessible (start with an *U*ppercase letter); otherwise the json library won't be able to access them. In the following example, the field `b` is not publically accessible and will not be included in the comparison because it is not exported into the golden file:
+
+[source,go]
+----
+func TestIgnoredField(t *testing.T) {
+	type IgnoredField struct {
+		A string
+		b string
+	}
+
+	actual := IgnoredField{
+		A: "Hello",
+		b: "world",
+	}
+
+	golden.CompareWithGolden(t, "ignoredField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: true})
+}
+----
+
+To overcome this, you can implement a `String() string` method on your struct:
+
+[source,go]
+----
+type StructWithPrivateField struct {
+	A string
+	b string
+}
+
+func (s StructWithPrivateField) String() string {
+	return fmt.Sprintf("A=%q\nb=%q", s.A, s.b)
+}
+
+func TestPrivateFieldButIncludedInString(t *testing.T) {
+	actual := StructWithPrivateField{
+		A: "Hello",
+		b: "world",
+	}
+
+  golden.CompareWithGolden(t, "structWithPrivateField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: false})
+}
+----
+
+**golden** will find the `String()` method and call it for you automatically.
+
+= Attribution
+
+I wrote all of the initial code except for some the IST timezone additions by https://github.com/fabric8-services/fabric8-wit/commit/a5503361b7dc2f048d6fd3d0b2891dd996e86561[@jarifibrahim and @baijum].
