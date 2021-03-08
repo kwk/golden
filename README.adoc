@@ -5,7 +5,7 @@
 :experimental:
 
 image:https://github.com/kwk/golden/actions/workflows/go.yml/badge.svg[Go,link="https://github.com/kwk/golden/actions/workflows/go.yml"]
-image:https://codecov.io/gh/kwk/golden/branch/main/graph/badge.svg?token=8CBUCOrLzI[codecov,link="https://github.com/kwk/golden/actions/workflows/go.yml"]
+image:https://codecov.io/gh/kwk/golden/branch/main/graph/badge.svg?token=8CBUCOrLzI[codecov,link="https://app.codecov.io/gh/kwk/golden"]
 image:https://goreportcard.com/badge/github.com/kwk/golden[Go Report Card,link="https://goreportcard.com/report/github.com/kwk/golden"]
 image:https://pkg.go.dev/badge/github.com/kwk/golden.svg[Go Reference,link="https://pkg.go.dev/github.com/kwk/golden"]
 
