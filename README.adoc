@@ -288,3 +288,7 @@ func TestPrivateFieldButIncludedInString(t *testing.T) {
 = Attribution
 
 I wrote all of the initial code except for some the IST timezone additions by https://github.com/fabric8-services/fabric8-wit/commit/a5503361b7dc2f048d6fd3d0b2891dd996e86561[@jarifibrahim and @baijum].
+
+= What others have to say about it
+
+* @jarifibrahim wrote an article about the technique we use https://medium.com/@jarifibrahim/golden-files-why-you-should-use-them-47087ec994bf[here]. 
