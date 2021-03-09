@@ -32,7 +32,7 @@ func TestDemo1(t *testing.T) {
 		},
 	}
 
-	golden.CompareWithGolden(t, "johnDoe.golden.json", johnDoe, golden.CompareOptions{MarshalInputAsJSON: true})
+	golden.Compare(t, "johnDoe.golden.json", johnDoe, golden.CompareOptions{MarshalInputAsJSON: true})
 }
 
 func TestAddMovedInField(t *testing.T) {
@@ -55,7 +55,7 @@ func TestAddMovedInField(t *testing.T) {
 		MovedIn: time.Now(),
 	}
 
-	golden.CompareWithGolden(t, "movedIn.golden.json", johnDoe, golden.CompareOptions{
+	golden.Compare(t, "movedIn.golden.json", johnDoe, golden.CompareOptions{
 		MarshalInputAsJSON: true,
 		DateTimeAgnostic:   true,
 	})
@@ -72,7 +72,7 @@ func TestIgnoredField(t *testing.T) {
 		b: "world",
 	}
 
-	golden.CompareWithGolden(t, "ignoredField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: true})
+	golden.Compare(t, "ignoredField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: true})
 }
 
 type StructWithPrivateField struct {
@@ -90,7 +90,7 @@ func TestPrivateFieldButIncludedInString(t *testing.T) {
 		b: "world",
 	}
 
-	golden.CompareWithGolden(t, "structWithPrivateField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: false})
+	golden.Compare(t, "structWithPrivateField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: false})
 }
 
 func TestSillyUUIDStruct(t *testing.T) {
@@ -105,7 +105,7 @@ func TestSillyUUIDStruct(t *testing.T) {
 
 	actual := UUIDGroup{y, z, x, z, x, y}
 
-	golden.CompareWithGolden(t, "sillyUuid.golden.json", actual, golden.CompareOptions{
+	golden.Compare(t, "sillyUuid.golden.json", actual, golden.CompareOptions{
 		MarshalInputAsJSON: true,
 		UUIDAgnostic:       true,
 	})

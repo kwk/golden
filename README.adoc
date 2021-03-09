@@ -62,7 +62,7 @@ Then, in a test you can check if the JSON representation of `johnDoe` is the sam
 
 [source,go]
 ----
-golden.CompareWithGolden(t, "johnDoe.golden.json", johnDoe, golden.CompareOptions{MarshalInputAsJSON: true})
+golden.Compare(t, "johnDoe.golden.json", johnDoe, golden.CompareOptions{MarshalInputAsJSON: true})
 ----
 
 If the comparison fails, `Fatal()` is called on the passed the `testing.T` object `t`.
@@ -158,7 +158,7 @@ func TestAddMovedInField(t *testing.T) {
 		MovedIn: time.Now(),
 	}
 
-	golden.CompareWithGolden(t, "movedIn.golden.json", johnDoe, golden.CompareOptions{
+	golden.Compare(t, "movedIn.golden.json", johnDoe, golden.CompareOptions{
 		MarshalInputAsJSON: true,
 		DateTimeAgnostic:   true,
 	})
@@ -214,7 +214,7 @@ func TestSillyUUIDStruct(t *testing.T) {
 
 	actual := UUIDGroup{y, z, x, z, x, y}
 
-	golden.CompareWithGolden(t, "sillyUuid.golden.json", actual, golden.CompareOptions{
+	golden.Compare(t, "sillyUuid.golden.json", actual, golden.CompareOptions{
 		MarshalInputAsJSON: true,
 		UUIDAgnostic:       true,
 	})
@@ -256,7 +256,7 @@ func TestIgnoredField(t *testing.T) {
 		b: "world",
 	}
 
-	golden.CompareWithGolden(t, "ignoredField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: true})
+	golden.Compare(t, "ignoredField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: true})
 }
 ----
 
@@ -279,7 +279,7 @@ func TestPrivateFieldButIncludedInString(t *testing.T) {
 		b: "world",
 	}
 
-  golden.CompareWithGolden(t, "structWithPrivateField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: false})
+  golden.Compare(t, "structWithPrivateField.golden.json", actual, golden.CompareOptions{MarshalInputAsJSON: false})
 }
 ----
 

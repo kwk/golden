@@ -183,7 +183,7 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 			if !opts.MarshalInputAsJSON {
 				data = dummyStr
 			}
-			err := testableCompareWithGolden(false, f, data, opts)
+			err := testableCompare(false, f, data, opts)
 			// then
 			require.Error(t, err)
 			var pathError *os.PathError
@@ -197,7 +197,7 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 			if !opts.MarshalInputAsJSON {
 				data = dummyStr
 			}
-			err := testableCompareWithGolden(true, f, data, opts)
+			err := testableCompare(true, f, data, opts)
 			// then
 			// then double check that file exists and no error occurred
 			require.NoError(t, err)
@@ -218,7 +218,7 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 			if !opts.MarshalInputAsJSON {
 				data = dummyStr
 			}
-			err = testableCompareWithGolden(false, f.Name(), data, opts)
+			err = testableCompare(false, f.Name(), data, opts)
 			// then
 			require.Error(t, err)
 			var pathError *os.PathError
@@ -243,13 +243,13 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 		t.Run("comparing with the same object", func(t *testing.T) {
 			t.Run("not agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
 				// then
 				require.NoError(t, err)
 			})
 			t.Run("agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
 				// then
 				require.NoError(t, err)
 			})
@@ -258,13 +258,13 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 			dummy.ID = uuid.NewV4()
 			t.Run("not agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
 				// then
 				require.Error(t, err)
 			})
 			t.Run("agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
 				// then
 				require.NoError(t, err)
 			})
@@ -273,13 +273,13 @@ func TestGoldenCompareWithGolden(t *testing.T) {
 			dummy.CreatedAt = time.Now()
 			t.Run("not agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{MarshalInputAsJSON: true})
 				// then
 				require.Error(t, err)
 			})
 			t.Run("agnostic", func(t *testing.T) {
 				// when
-				err = testableCompareWithGolden(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
+				err = testableCompare(false, f, dummy, CompareOptions{UUIDAgnostic: true, DateTimeAgnostic: true, MarshalInputAsJSON: true})
 				// then
 				require.NoError(t, err)
 			})

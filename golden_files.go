@@ -40,14 +40,14 @@ type CompareOptions struct {
 	MarshalInputAsJSON bool
 }
 
-// CompareWithGolden compares the actual object against the one from a
+// Compare compares the actual object against the one from a
 // golden file and let's you specify the options to be used for comparison and
 // golden file production by hand. If the -update flag is given, that golden
 // file is overwritten with the current actual object. When adding new tests you
 // first must run them with the -update flag in order to create an initial
 // golden version.
-func CompareWithGolden(t *testing.T, goldenFile string, actualObj interface{}, opts CompareOptions) {
-	if err := testableCompareWithGolden(*updateGoldenFiles, goldenFile, actualObj, opts); err != nil {
+func Compare(t *testing.T, goldenFile string, actualObj interface{}, opts CompareOptions) {
+	if err := testableCompare(*updateGoldenFiles, goldenFile, actualObj, opts); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -56,7 +56,7 @@ type stringer interface {
 	String() string
 }
 
-func testableCompareWithGolden(update bool, goldenFile string, actualObj interface{}, opts CompareOptions) error {
+func testableCompare(update bool, goldenFile string, actualObj interface{}, opts CompareOptions) error {
 	absPath, err := filepath.Abs(goldenFile)
 	if err != nil {
 		return fmt.Errorf("failed to get abosolute path for %q: %w", goldenFile, err)
