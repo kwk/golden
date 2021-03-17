@@ -241,7 +241,7 @@ The golden file produced by `-update` for this flag looks like this:
 The approach of this library is agnostic to the underlying object as long as it can be converted to a string or marshalled as JSON. When dealing with JSON you have the added benefit of an output document that is nicely formatted before it's saved to disk. This is good for manual inspection for example. Of course textual comparison isn't the fastest to compute but having requests and responses as text sitting next to your code can add quite a significant *documentation value*. Also, the golden files can *uncover weaknesses* of your API design at plain sight.
 
 === Any shortcomings?
-Unless you objects implement the `Stringer` interface, all of the fields in your objects that you want to compare need to be publically accessible (start with an *U*ppercase letter); otherwise the json library won't be able to access them. In the following example, the field `b` is not publically accessible and will not be included in the comparison because it is not exported into the golden file:
+Unless you objects implement the https://golang.org/pkg/fmt/#Stringer[`Stringer` interface], all of the fields in your objects that you want to compare need to be publically accessible (start with an *U*ppercase letter); otherwise the json library won't be able to access them. In the following example, the field `b` is not publically accessible and will not be included in the comparison because it is not exported into the golden file:
 
 [source,go]
 ----
