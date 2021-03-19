@@ -52,6 +52,11 @@ func Compare(t *testing.T, goldenFile string, actualObj interface{}, opts Compar
 	}
 }
 
+// CompareWithGolden is deprecated, use Compare for less stutter
+func CompareWithGolden(t *testing.T, goldenFile string, actualObj interface{}, opts CompareOptions) {
+	Compare(t, goldenFile, actualObj, opts)
+}
+
 type stringer interface {
 	String() string
 }
